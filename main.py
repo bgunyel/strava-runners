@@ -16,7 +16,9 @@ import constants
 def development():
     # df = utils.read_data()
 
-    df = gpx_utils.read_gpx_to_df(file_path=constants.DATA_FOLDER + 'Morning_Walk.gpx')
+    map_name = 'berlin_marathon'
+    df = gpx_utils.read_gpx_to_df(file_path=constants.DATA_FOLDER + f'{map_name}.gpx')
+    gpx_utils.visualize_track_on_map(df=df, map_name=map_name)
 
     dummy = -32
 
