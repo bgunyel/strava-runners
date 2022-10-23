@@ -29,6 +29,12 @@ SLOPE: Final = 'slope'
 SPEED: Final = 'speed (min/km)'  # raw speed
 ADJUSTED_SPEED: Final = 'adjusted_speed'
 
+LATITUDE: Final = 'latitude'
+LONGITUDE: Final = 'longitude'
+ELEVATION: Final = 'elevation'
+HR: Final = 'hr'  # heart rate
+CAD: Final = 'cad'  # cadence
+
 DATE: Final = 'date'
 TIME: Final = 'time'
 YEAR: Final = 'year'
@@ -46,4 +52,12 @@ THURSDAY: Final = 'Thursday'
 FRIDAY: Final = 'Friday'
 SATURDAY: Final = 'Saturday'
 SUNDAY: Final = 'Sunday'
+
+MEN: Final = 'men'
+WOMEN: Final = 'women'
+RECORD: Final = 'record'
+
+WORLD_RECORD_SPEEDS: Final = {DISTANCE: [1000, 1500, 1609.344, 2000, 3218.688, 5000, 10000, 21097.5, 42195],
+                              MEN:      [2.20, 2.29, 2.31,     2.38, 2.48,     2.52, 2.62,  2.73,    2.87],
+                              WOMEN:    [2.48, 2.56, 2.61,     2.71, 2.79,     2.82, 2.93,  2.98,    3.18]}
 

@@ -1,10 +1,22 @@
 import datetime
 
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+import gpxpy
+import lxml
+
+import gpx_utils
 import utils
+import stats
+import constants
 
 
 def development():
-    df = utils.read_data()
+    # df = utils.read_data()
+
+    df = gpx_utils.read_gpx_to_df(file_path=constants.DATA_FOLDER + 'Morning_Walk.gpx')
 
     dummy = -32
 

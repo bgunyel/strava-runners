@@ -1,4 +1,6 @@
 import pandas as pd
+import numpy as np
+from scipy.interpolate import interp1d
 
 import constants
 
@@ -26,5 +28,41 @@ def read_data():
     df[constants.SLOPE] = df[constants.ELEVATION_GAIN] / df[constants.DISTANCE]
     df[constants.SPEED] = (df[constants.ELAPSED_TIME] / 60) / (df[constants.DISTANCE] / 1000)
 
-    return df
+    out_df = clean_data(df=df)
+
+    return out_df
+
+
+def clean_data(df):
+
+    out_df = df.copy(deep=True)
+
+    # Filtering too good results with the help of world records
+    distances = np.array(constants.WORLD_RECORD_SPEEDS[constants.DISTANCE])
+    men_speed = np.array(constants.WORLD_RECORD_SPEEDS[constants.MEN])
+    women_speed = np.array(constants.WORLD_RECORD_SPEEDS[constants.WOMEN])
+
+    x = out_df[constants.DISTANCE].to_numpy()
+
+    interpolation_type = 'linear'
+    f_men = interp1d(distances, men_speed, kind=interpolation_type, assume_sorted=True, fill_value='extrapolate')
+    f_women = interp1d(distances, women_speed, kind=interpolation_type, assume_sorted=True, fill_value='extrapolate')
+    y_men = f_men(x)
+    y_women = f_women(x)
+
+    out_df[constants.RECORD] = y_men
+    mask = out_df[constants.GENDER] == 'F'
+    out_df.loc[mask, constants.RECORD] = y_women[mask]
+
+    # Cleaning
+    out_df.drop(out_df[out_df[constants.DISTANCE] < 1000].index, inplace=True)
+    out_df.drop(out_df[out_df[constants.SPEED] > 12].index, inplace=True)  # Drop runs with time worse than 12 min/km
+    out_df.drop(out_df[out_df[constants.ELAPSED_TIME] < 120].index, inplace=True)
+    out_df.drop(out_df[out_df[constants.SPEED] < out_df[constants.RECORD] * 0.90].index, inplace=True)
+
+
+
+
+    return out_df
+
 
