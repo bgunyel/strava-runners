@@ -35,6 +35,11 @@ ELEVATION: Final = 'elevation'
 HR: Final = 'hr'  # heart rate
 CAD: Final = 'cad'  # cadence
 
+GREAT_CIRCLE: Final = 'great_circle_distance'
+GEODESIC: Final = 'geodesic_distance'
+EUCLIDEAN_GREAT_CIRCLE: Final = 'euclidean_great_circle'
+EUCLIDEAN_GEODESIC: Final = 'euclidean_geodesic'
+
 DATE: Final = 'date'
 TIME: Final = 'time'
 YEAR: Final = 'year'

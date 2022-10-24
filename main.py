@@ -16,8 +16,17 @@ import constants
 def development():
     # df = utils.read_data()
 
-    map_name = 'berlin_marathon'
+    #    map_name = 'berlin_marathon'
+    map_name = 'Morning_Walk'
     df = gpx_utils.read_gpx_to_df(file_path=constants.DATA_FOLDER + f'{map_name}.gpx')
+
+    distance_types = [constants.GREAT_CIRCLE, constants.GEODESIC,
+                      constants.EUCLIDEAN_GREAT_CIRCLE, constants.EUCLIDEAN_GEODESIC]
+    for distance_type in distance_types:
+        time1 = datetime.datetime.now()
+        df[distance_type + '_speed'] = gpx_utils.calculate_speed(df=df, distance_type=distance_type)
+        time2 = datetime.datetime.now()
+        print(f'{distance_type}: {time2 - time1}')
     gpx_utils.visualize_track_on_map(df=df, map_name=map_name)
 
     dummy = -32

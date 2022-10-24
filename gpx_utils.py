@@ -1,4 +1,5 @@
 import datetime
+import itertools
 
 import branca
 import pandas as pd
@@ -8,6 +9,9 @@ import matplotlib.pyplot as plt
 import gpxpy
 import lxml
 import folium
+
+from geopy.distance import great_circle
+from geopy.distance import geodesic
 
 import utils
 import stats
@@ -36,8 +40,44 @@ def read_gpx_to_df(file_path):
     return df
 
 
-def visualize_track_on_map(df, map_name):
+def calculate_distance(df, distance_type):
+    coordinates = [tuple(x) for x in df[[constants.LATITUDE, constants.LONGITUDE]].to_numpy()]
+    distances = [np.nan] * len(coordinates)
 
+    if distance_type in [constants.GREAT_CIRCLE, constants.EUCLIDEAN_GREAT_CIRCLE]:
+        distances[1:] = [great_circle(coordinates[i], coordinates[i - 1]).m for i in range(1, len(coordinates))]
+    elif distance_type in [constants.GEODESIC, constants.EUCLIDEAN_GEODESIC]:
+        distances[1:] = [geodesic(coordinates[i], coordinates[i - 1]).m for i in range(1, len(coordinates))]
+    else:
+        raise Exception('Unsupported Distance Type!')
+
+    if distance_type in [constants.EUCLIDEAN_GREAT_CIRCLE, constants.EUCLIDEAN_GEODESIC]:
+        dummy = -32
+        elev_diff = df[constants.ELEVATION].diff().abs().to_list()
+        distances[1:] = [np.sqrt(elev_diff[i] ** 2 + distances[i] ** 2) for i in range(1, len(coordinates))]
+
+    return distances
+
+
+def calculate_speed(df, distance_type, step_size=10):
+    distances = calculate_distance(df=df, distance_type=distance_type)
+    distances[0] = 0
+    cum_distances = list(itertools.accumulate(distances))
+
+    step = max(step_size, next(i for i,v in enumerate(cum_distances) if v > 0))
+
+    time_diff = df[constants.DATE_TIME].diff(periods=step).to_list()
+
+    speed_vector = [np.nan] * len(distances)
+
+    speed_vector[step:] = \
+        [(time_diff[i].total_seconds() * 1000 / 60) / (cum_distances[i] - cum_distances[i - step]) \
+         for i in range(step, len(distances))]
+
+    return speed_vector
+
+
+def visualize_track_on_map(df, map_name):
     tiles = 'OpenStreetMap'
 
     # df['color'] = df[constants.HR].rolling(2).mean()
@@ -48,9 +88,11 @@ def visualize_track_on_map(df, map_name):
 
     track_map = folium.Map(location=[center_lat, center_lon], width=1536, height=864, tiles=tiles, zoom_start=13)
 
-
     features_list = [constants.HR, constants.CAD]
-    colors = ['#0000FF', '#FF00FF', '#FF0000']
+    # colors = ['#0000FF', '#FF00FF', '#FF0000']
+    colors = ['#0000FF', '#4169E1', '#8A2BE2', '#4B0082', '#483D8B', '#6A5ACD', '#7B68EE', '#9370DB', '#9400D3',
+              '#9932CC', '#BA55D3', '#800080', '#C71585', '#FF00FF', '#FF1493', '#F08080', '#FA8072', '#FF6347',
+              '#FF4500', '#FF0000']
 
     for feature in features_list:
         feature_group = folium.FeatureGroup(feature)
@@ -68,4 +110,3 @@ def visualize_track_on_map(df, map_name):
     track_map.save(f'{constants.OUT_FOLDER}{map_name}.html')
 
     dummy = -32
-
